@@ -1,0 +1,47 @@
+[
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/Shooter.Build.cs",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/Shooter.cpp",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/Shooter.h",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterAnimInstance.cpp",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterAnimInstance.h",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterCharacter.cpp",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterCharacter.h",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterGameModeBase.cpp",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	},
+	{
+		"file": "/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/Source/Shooter/ShooterGameModeBase.h",
+		"command": "cl.exe @\"/Volumes/Data/UnrealWorkspace/ShooterCourse/Shooter/.vscode/compileCommands_Shooter/Shooter.176.rsp\"",
+		"directory": "/Users/Shared/EpicGames/UE_4.26/Engine/Source"
+	}
+]
