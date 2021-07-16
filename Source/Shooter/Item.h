@@ -7,6 +7,18 @@
 #include "Components/WidgetComponent.h"
 #include "Item.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemRarity : uint8
+{
+	EIR_Damaged UMETA(DisplayName = "Damaged"),
+	EIR_Common UMETA(DisplayName = "Common"),
+	EIR_Uncommon UMETA(DisplayName = "Uncommon"),
+	EIR_Rare UMETA(DisplayName = "Rare"),
+	EIR_Legendary UMETA(DisplayName = "Legendary"),
+
+	EIR_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class SHOOTER_API AItem : public AActor
 {
@@ -32,6 +44,8 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+	void SetActiveStars();
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -53,6 +67,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	int32 ItemCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemRarity ItemRarity;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	TArray<bool> ActiveStars;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
