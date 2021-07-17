@@ -3,6 +3,9 @@
 #include "ShooterCharacter.h"
 
 #include "Item.h"
+#include "Weapon.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -69,6 +72,8 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -112,13 +117,9 @@ void AShooterCharacter::Turn(float Value)
 	float TurnScaleFactor { };
 	
 	if (bAiming)
-	{
 		TurnScaleFactor = MouseAimingTurnRate;
-	}
 	else
-	{
 		TurnScaleFactor = MouseHipTurnRate;
-	}
 
 	AddControllerYawInput(Value * TurnScaleFactor);
 }
@@ -128,13 +129,9 @@ void AShooterCharacter::LookUp(float Value)
 	float LookUpScaleFactor { };
 
 	if (bAiming)
-	{
 		LookUpScaleFactor = MouseAimingLookUpRate;
-	}
 	else
-	{
 		LookUpScaleFactor = MouseHipLookUpRate;
-	}
 
 	AddControllerPitchInput(Value * LookUpScaleFactor);
 }
@@ -142,9 +139,8 @@ void AShooterCharacter::LookUp(float Value)
 void AShooterCharacter::FireWeapon()
 {
 	if (FireSound)
-	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
-	}
+	
 	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 
 	if (BarrelSocket)
@@ -152,9 +148,7 @@ void AShooterCharacter::FireWeapon()
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
 
 		if (MuzzleFlash)
-		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
-		}
 
 		FVector BeamEnd;
 		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
@@ -163,9 +157,7 @@ void AShooterCharacter::FireWeapon()
 		{
 			// spawn impact particles after updating beam end point
 			if (ImpactParticles)
-			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEnd);
-			}
 
 			if (BeamParticles)
 			{
@@ -173,9 +165,7 @@ void AShooterCharacter::FireWeapon()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
 
 				if (Beam)
-				{
 					Beam->SetVectorParameter(FName("Target"), BeamEnd);
-				}
 			}
 		}
 	}
@@ -198,9 +188,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
 
 	if (bCrosshairHit)
-	{
 		OutBeamLocation = CrosshairHitResult.Location;
-	}
 
 	FHitResult WeaponTraceHit;
 	const FVector WeaponTraceStart { MuzzleSocketLocation };
@@ -280,38 +268,30 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 
 	// calculate crosshair while aiming factor
 	if (bAiming)
-	{
 		CrosshairAimFactor = FMath::FInterpTo(
 			CrosshairAimFactor,
 			-0.4f,
 			DeltaTime,
 			25.f);
-	}
 	else
-	{
 		CrosshairAimFactor = FMath::FInterpTo(
 			CrosshairAimFactor,
 			0.f,
 			DeltaTime,
 			25.f);
-	}
 
 	if (bFiringBullet)
-	{
 		CrosshairShootingFactor = FMath::FInterpTo(
 			CrosshairShootingFactor,
 			.3f,
 			DeltaTime,
 			60.f);
-	}
 	else
-	{
 		CrosshairShootingFactor = FMath::FInterpTo(
 			CrosshairShootingFactor,
 			0.f,
 			DeltaTime,
 			60.f);
-	}
 	
 	CrosshairSpreadMultiplier = 0.5f +
 		CrosshairVelocityFactor +
@@ -368,18 +348,14 @@ void AShooterCharacter::AutoFireReset()
 	bShouldFire = true;
 
 	if (bFireButtonPressed)
-	{
 		StartFireTimer();
-	}
 }
 
 bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
 {
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
-	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
-	}
 
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 	FVector CrosshairWorldPosition;
@@ -420,24 +396,38 @@ void AShooterCharacter::TraceForItems()
 		{
 			AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
 			if (HitItem && HitItem->GetPickupWidget())
-			{
 				HitItem->GetPickupWidget()->SetVisibility(true);
-			}
 
 			if (TraceHitItemLastFrame)
-			{
 				if (HitItem != TraceHitItemLastFrame)
-				{
 					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
-				}
-			}
 
 			TraceHitItemLastFrame = HitItem;
 		}
 	}
 	else if (TraceHitItemLastFrame)
-	{
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+}
+
+AWeapon* AShooterCharacter::SpawnDefaultWeapon()
+{
+	if (DefaultWeaponClass)
+		return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+
+	return nullptr;
+}
+
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip)
+	{
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+		if (HandSocket)
+			HandSocket->AttachActor(WeaponToEquip, GetMesh());
+
+		EquippedWeapon = WeaponToEquip;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 	}
 }
 

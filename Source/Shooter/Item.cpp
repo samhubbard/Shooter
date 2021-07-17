@@ -1,6 +1,5 @@
 // Copyright 2021 - Samuel Hubbard
 
-
 #include "Item.h"
 
 #include "ShooterCharacter.h"
@@ -10,9 +9,9 @@
 AItem::AItem() :
 	ItemName(FString("Default")),
 	ItemCount(0),
-	ItemRarity(EItemRarity::EIR_Common)
+	ItemRarity(EItemRarity::EIR_Common),
+	ItemState(EItemState::EIS_Pickup)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemMesh"));
@@ -41,6 +40,8 @@ void AItem::BeginPlay()
 	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 
 	SetActiveStars();
+
+	SetItemProperties(ItemState);
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -50,9 +51,7 @@ void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	{
 		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
 		if (ShooterCharacter)
-		{
 			ShooterCharacter->IncrementOverlappedItemCount(1);
-		}
 	}
 }
 
@@ -63,18 +62,14 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
 		if (ShooterCharacter)
-		{
 			ShooterCharacter->IncrementOverlappedItemCount(-1);
-		}
 	}
 }
 
 void AItem::SetActiveStars()
 {
 	for (int32 i = 0; i <= 5; i++)
-	{
 		ActiveStars.Add(false);
-	}
 
 	switch (ItemRarity)
 	{
@@ -92,9 +87,54 @@ void AItem::SetActiveStars()
 	}
 }
 
+void AItem::SetItemProperties(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EIS_Pickup:
+		// Mesh Properties
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// AreaSphere Properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECR_Overlap);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		// CollisionBox Properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+		CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		
+		break;
+	case EItemState::EIS_Equipped:
+		// Mesh Properties
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// AreaSphere Properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// CollisionBox Properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		break;
+	}
+}
+
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
+void AItem::SetItemState(EItemState State)
+{
+	ItemState = State;
+	SetItemProperties(ItemState);
+}

@@ -10,6 +10,7 @@
 
 #include "ShooterCharacter.generated.h"
 
+class AWeapon;
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -73,6 +74,10 @@ protected:
 	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
 
 	void TraceForItems();
+
+	class AWeapon* SpawnDefaultWeapon();
+
+	void EquipWeapon(AWeapon* WeaponToEquip);
 	
 public:	
 	// Called every frame
@@ -180,6 +185,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	class AItem* TraceHitItemLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 public:
 	/** Returns CameraBoom subobject */
