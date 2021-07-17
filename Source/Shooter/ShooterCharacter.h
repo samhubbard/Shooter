@@ -78,6 +78,12 @@ protected:
 	class AWeapon* SpawnDefaultWeapon();
 
 	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	void DropWeapon();
+
+	void SelectButtonPressed();
+
+	void SelectButtonReleased();
 	
 public:	
 	// Called every frame
