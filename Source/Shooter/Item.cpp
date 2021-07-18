@@ -124,6 +124,9 @@ void AItem::SetItemProperties(EItemState State)
 		// CollisionBox Properties
 		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// Pickup widget Properties
+		PickupWidget->SetVisibility(false);
 		
 		break;
 
