@@ -62,6 +62,8 @@ protected:
 
 	void FinishInterping();
 
+	void ItemInterp(float DeltaTime);
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -112,6 +114,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	float ZCurveTime;
+
+	float ItemInterpX;
+	float ItemInterpY;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }

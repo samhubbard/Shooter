@@ -14,7 +14,9 @@ AItem::AItem() :
 	ItemInterpStartLocation(FVector(0.f)),
 	CameraTargetLocation(FVector(0.f)),
 	bInterping(false),
-	ZCurveTime(.7f)
+	ZCurveTime(.7f),
+	ItemInterpX(0.f),
+	ItemInterpY(0.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -178,14 +180,52 @@ void AItem::SetItemProperties(EItemState State)
 
 void AItem::FinishInterping()
 {
+	bInterping = false;
+	
 	if (Character)
 		Character->GetPickupItem(this);
+}
+
+void AItem::ItemInterp(float DeltaTime)
+{
+	if (!bInterping) return;
+
+	if (Character && ItemZCurve)
+	{
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+		const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
+
+		FVector ItemLocation = ItemInterpStartLocation;
+		const FVector CameraInterpLocation { Character->GetCameraInterpLocation() };
+		
+		const FVector ItemToCamera { FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z) };
+		const float DeltaZ = ItemToCamera.Size();
+
+		const FVector CurrentLocation { GetActorLocation() };
+		const float InterpXValue = FMath::FInterpTo(
+			CurrentLocation.X,
+			CameraInterpLocation.X,
+			DeltaTime,
+			30.f);
+		const float InterpYValue = FMath::FInterpTo(
+			CurrentLocation.Y,
+			CameraInterpLocation.Y,
+			DeltaTime,
+			30.f);
+
+		ItemLocation.X = InterpXValue;
+		ItemLocation.Y = InterpYValue;
+		ItemLocation.Z += CurveValue * DeltaZ;
+		
+		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
+	}
 }
 
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ItemInterp(DeltaTime);
 }
 
 void AItem::SetItemState(EItemState State)
