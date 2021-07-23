@@ -117,6 +117,11 @@ private:
 
 	float ItemInterpX;
 	float ItemInterpY;
+
+	float InterpInitialYawOffset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* ItemScaleCurve;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }

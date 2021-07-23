@@ -16,7 +16,8 @@ AItem::AItem() :
 	bInterping(false),
 	ZCurveTime(.7f),
 	ItemInterpX(0.f),
-	ItemInterpY(0.f)
+	ItemInterpY(0.f),
+	InterpInitialYawOffset(0.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -184,6 +185,8 @@ void AItem::FinishInterping()
 	
 	if (Character)
 		Character->GetPickupItem(this);
+
+	SetActorScale3D(FVector(1.f));
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -218,6 +221,17 @@ void AItem::ItemInterp(float DeltaTime)
 		ItemLocation.Z += CurveValue * DeltaZ;
 		
 		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
+
+		const FRotator CameraRotation { Character->GetFollowCamera()->GetComponentRotation() };
+		FRotator ItemRotation { 0.f, CameraRotation.Yaw + InterpInitialYawOffset, 0.f };
+
+		SetActorRotation(ItemRotation, ETeleportType::TeleportPhysics);
+
+		if (ItemScaleCurve)
+		{
+			const float ScaleCurveValue = ItemScaleCurve->GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ScaleCurveValue, ScaleCurveValue, ScaleCurveValue));
+		}
 	}
 }
 
@@ -243,4 +257,9 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 	SetItemState(EItemState::EIS_EquipInterping);
 
 	GetWorldTimerManager().SetTimer(ItemInterpTimer, this, &AItem::FinishInterping, ZCurveTime);
+
+	const float CameraRotationYaw { Character->GetFollowCamera()->GetComponentRotation().Yaw};
+	const float ItemRotationYaw { GetActorRotation().Yaw };
+
+	InterpInitialYawOffset = ItemRotationYaw - CameraRotationYaw;
 }
