@@ -3,21 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "AmmoType.h"
 
 #include "ShooterCharacter.generated.h"
-
-UENUM(BlueprintType)
-enum class EAmmoType : uint8
-{
-	EAT_9mm UMETA(DisplayName = "9mm"),
-	EAT_AR UMETA(DisplayName = "Assault Rifle"),
-
-	EAT_MAX UMETA(DisplayName = "DefaultMAX"),
-};
 
 UENUM(BlueprintType)
 enum class ECombatState : uint8
@@ -112,6 +103,14 @@ protected:
 	void PlayFireSound();
 	void SendBullet();
 	void PlayGunFireMontage();
+
+	void ReloadButtonPressed();
+	void ReloadWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	bool CarryingAmmo();
 	
 public:	
 	// Called every frame
@@ -247,6 +246,9 @@ private:
 	/** Combat state can only fire or reload when Unoccupied */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
 
 public:
 	/** Returns CameraBoom subobject */
