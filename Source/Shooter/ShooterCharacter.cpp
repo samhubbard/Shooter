@@ -273,6 +273,26 @@ bool AShooterCharacter::CarryingAmmo()
 	return false;
 }
 
+void AShooterCharacter::GrabClip()
+{
+	if (EquippedWeapon == nullptr)
+		return;
+
+	int32 ClipBoneIndex { EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName()) };
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("Hand_L")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
+}
+
+void AShooterCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
+}
+
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
 {
 	// check for crosshair trace hit
