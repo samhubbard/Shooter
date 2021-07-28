@@ -222,7 +222,7 @@ void AShooterCharacter::ReloadWeapon()
 	if (EquippedWeapon == nullptr)
 		return;
 
-	if (CarryingAmmo())
+	if (CarryingAmmo() && !EquippedWeapon->ClipIsFull())
 	{
 		CombatState = ECombatState::ECS_Reloading;
 	
