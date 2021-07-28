@@ -7,9 +7,62 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+UShooterAnimInstance::UShooterAnimInstance() :
+	Speed(0.f),
+	bIsInAir(false),
+	bIsAccelerating(false),
+	MovementOffsetYaw(0.f),
+	LastMovementOffsetYaw(0.f),
+	bAiming(false),
+	CharacterYaw(0.f),
+	CharacterYawLastFrame(0.f)
+{
+	
+}
+
 void UShooterAnimInstance::NativeInitializeAnimation()
 {
 	ShooterCharacter = Cast<AShooterCharacter>(TryGetPawnOwner());
+}
+
+void UShooterAnimInstance::TurnInPlace()
+{
+	if (ShooterCharacter == nullptr)
+		return;
+	
+	if (Speed > 0)
+	{
+		RootYawOffset = 0.f;
+		CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+		CharacterYawLastFrame = CharacterYaw;
+		RotationCurveLastFrame = 0.f;
+		RotationCurve = 0.f;
+		return;
+	}
+
+	CharacterYawLastFrame = CharacterYaw;
+	CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+	const float YawDelta { CharacterYaw - CharacterYawLastFrame };
+
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
+
+	const float Turning { GetCurveValue(TEXT("Turning")) };
+	if (Turning > 0)
+	{
+		RotationCurveLastFrame = RotationCurve;
+		RotationCurve = GetCurveValue(TEXT("Rotation"));
+		const float DeltaRotation { RotationCurve - RotationCurveLastFrame };
+
+		// RootYawOffset > 0 -> Turning left. RootYawOffset < 0 -> turning right
+		RootYawOffset > 0 ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
+
+		const float ABSRootYawOffset { FMath::Abs(RootYawOffset) };
+		if (ABSRootYawOffset > 90)
+		{
+			const float YawExcess { ABSRootYawOffset - 90.f };
+			RootYawOffset > 0 ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+		}
+	}
 }
 
 void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
@@ -46,6 +99,8 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		}
 
 		bAiming = ShooterCharacter->GetAiming();
+
+		TurnInPlace();
 	}
 }
 
