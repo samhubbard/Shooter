@@ -14,11 +14,14 @@ UShooterAnimInstance::UShooterAnimInstance() :
 	MovementOffsetYaw(0.f),
 	LastMovementOffsetYaw(0.f),
 	bAiming(false),
-	CharacterYaw(0.f),
-	CharacterYawLastFrame(0.f),
+	TIPCharacterYaw(0.f),
+	TIPCharacterYawLastFrame(0.f),
 	Pitch(0.f),
 	bReloading(false),
-	OffsetState(EOffsetState::EOS_Hip)
+	OffsetState(EOffsetState::EOS_Hip),
+	CharacterRotation(FRotator(0.f)),
+	CharacterRotationLastFrame(FRotator(0.f)),
+	YawDelta(0.f)
 {
 	
 }
@@ -38,18 +41,18 @@ void UShooterAnimInstance::TurnInPlace()
 	if (Speed > 0 || bIsInAir)
 	{
 		RootYawOffset = 0.f;
-		CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
-		CharacterYawLastFrame = CharacterYaw;
+		TIPCharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+		TIPCharacterYawLastFrame = TIPCharacterYaw;
 		RotationCurveLastFrame = 0.f;
 		RotationCurve = 0.f;
 		return;
 	}
 
-	CharacterYawLastFrame = CharacterYaw;
-	CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
-	const float YawDelta { CharacterYaw - CharacterYawLastFrame };
+	TIPCharacterYawLastFrame = TIPCharacterYaw;
+	TIPCharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+	const float TIPYawDelta { TIPCharacterYaw - TIPCharacterYawLastFrame };
 
-	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - TIPYawDelta);
 
 	const float Turning { GetCurveValue(TEXT("Turning")) };
 	if (Turning > 0)
@@ -68,6 +71,25 @@ void UShooterAnimInstance::TurnInPlace()
 			RootYawOffset > 0 ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
 		}
 	}
+}
+
+void UShooterAnimInstance::Lean(float DeltaTime)
+{
+	if (ShooterCharacter == nullptr)
+		return;
+
+	CharacterRotationLastFrame = CharacterRotation;
+	CharacterRotation = ShooterCharacter->GetActorRotation();
+
+	const FRotator Delta{ UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame) };
+
+	const float Target{ Delta.Yaw / DeltaTime };
+	const float Interp{ FMath::FInterpTo(YawDelta, Target, DeltaTime, 6.f) };
+
+	YawDelta = FMath::Clamp(Interp, -90.f, 90.f);
+
+	if (GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("Yaw delta: %f"), YawDelta));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(3, -1, FColor::Red, FString::Printf(TEXT("Delta.Yaw: %f"), Delta.Yaw));
 }
 
 void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
@@ -117,5 +139,6 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			OffsetState = EOffsetState::EOS_Hip;
 	}
 	TurnInPlace();
+	Lean(DeltaTime);
 }
 
