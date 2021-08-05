@@ -126,6 +126,9 @@ protected:
 
 	/** Interps capsule half height when crouching/standing */
 	void InterpCapsuleHalfHeight(float DeltaTime);
+
+	void Aim();
+	void StopAiming();
 	
 public:	
 	// Called every frame
@@ -307,6 +310,8 @@ private:
 	/** Grouch friction while crouching */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float CrouchingGroundFriction;
+
+	bool bAimingButtonPressed;
 
 public:
 	/** Returns CameraBoom subobject */
