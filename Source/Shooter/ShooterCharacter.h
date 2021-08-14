@@ -129,6 +129,8 @@ protected:
 
 	void Aim();
 	void StopAiming();
+
+	void PickupAmmo(class AAmmo* Ammo);
 	
 public:	
 	// Called every frame
