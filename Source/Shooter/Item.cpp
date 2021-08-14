@@ -19,7 +19,9 @@ AItem::AItem() :
 	ZCurveTime(.7f),
 	ItemInterpX(0.f),
 	ItemInterpY(0.f),
-	InterpInitialYawOffset(0.f)
+	InterpInitialYawOffset(0.f),
+	ItemType(EItemType::EIT_MAX),
+	InterpLocIndex(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -186,7 +188,10 @@ void AItem::FinishInterping()
 	bInterping = false;
 	
 	if (Character)
+	{
+		Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
 		Character->GetPickupItem(this);
+	}
 
 	SetActorScale3D(FVector(1.f));
 }
@@ -201,7 +206,7 @@ void AItem::ItemInterp(float DeltaTime)
 		const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
 
 		FVector ItemLocation = ItemInterpStartLocation;
-		const FVector CameraInterpLocation { Character->GetCameraInterpLocation() };
+		const FVector CameraInterpLocation { GetInterpLocation() };
 		
 		const FVector ItemToCamera { FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z) };
 		const float DeltaZ = ItemToCamera.Size();
@@ -237,6 +242,53 @@ void AItem::ItemInterp(float DeltaTime)
 	}
 }
 
+FVector AItem::GetInterpLocation()
+{
+	if (Character == nullptr) return FVector(0.f);
+
+	switch(ItemType)
+	{
+		case EItemType::EIT_Ammo:
+			return Character->GetInterpLocation(InterpLocIndex).SceneComponent->GetComponentLocation();
+
+		case EItemType::EIT_Weapon:
+			return Character->GetInterpLocation(0).SceneComponent->GetComponentLocation();
+		
+		default:
+			return FVector(0.f);
+	}
+}
+
+void AItem::PlayPickupSound()
+{
+	if (Character)
+	{
+		if (Character->ShouldPlayPickupSound())
+		{
+			Character->StartPickupSoundTimer();
+			if (PickupSound)
+			{
+				UGameplayStatics::PlaySound2D(this, PickupSound);
+			}
+		}
+	}
+}
+
+void AItem::PlayEquipSound()
+{
+	if (Character)
+	{
+		if (Character->ShouldPlayEquipSound())
+		{
+			Character->StartEquipSoundTimer();
+			if (EquipSound)
+			{
+				UGameplayStatics::PlaySound2D(this, EquipSound);
+			}
+		}
+	}
+}
+
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -254,10 +306,10 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 {
 	Character = Char;
 
-	if (PickupSound)
-	{
-		UGameplayStatics::PlaySound2D(this, PickupSound);
-	}
+	InterpLocIndex = Character->GetInterpLocationIndex();
+	Character->IncrementInterpLocItemCount(InterpLocIndex, 1);
+
+	PlayPickupSound();
 
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;
