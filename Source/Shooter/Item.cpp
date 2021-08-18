@@ -21,7 +21,8 @@ AItem::AItem() :
 	ItemInterpY(0.f),
 	InterpInitialYawOffset(0.f),
 	ItemType(EItemType::EIT_MAX),
-	InterpLocIndex(0)
+	InterpLocIndex(0),
+	MaterialIndex(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -53,6 +54,8 @@ void AItem::BeginPlay()
 	SetActiveStars();
 
 	SetItemProperties(ItemState);
+
+	InitializeCustomDepth();
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -271,6 +274,30 @@ void AItem::PlayPickupSound()
 				UGameplayStatics::PlaySound2D(this, PickupSound);
 			}
 		}
+	}
+}
+
+void AItem::EnableCustomDepth()
+{
+	ItemMesh->SetRenderCustomDepth(true);
+}
+
+void AItem::DisableCustomDepth()
+{
+	ItemMesh->SetRenderCustomDepth(false);
+}
+
+void AItem::InitializeCustomDepth()
+{
+	DisableCustomDepth();
+}
+
+void AItem::OnConstruction(const FTransform& Transform)
+{
+	if (MaterialInstance)
+	{
+		DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MaterialInstance, this);
+		ItemMesh->SetMaterial(MaterialIndex, DynamicMaterialInstance);
 	}
 }
 

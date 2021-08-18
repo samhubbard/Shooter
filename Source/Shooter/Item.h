@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/WidgetComponent.h"
+
 #include "Item.generated.h"
 
 UENUM(BlueprintType)
@@ -76,6 +77,10 @@ protected:
 	FVector GetInterpLocation();
 
 	void PlayPickupSound();
+
+	virtual void InitializeCustomDepth();
+
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -154,6 +159,18 @@ private:
 	/** Index of the interp location this item is interping to */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	int32 InterpLocIndex;
+
+	/** Index for the material we'd like to change at runtime */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 MaterialIndex;
+
+	/** Dynamic instance that we can change at runtime */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstanceDynamic* DynamicMaterialInstance;
+
+	/** Material instance used with the dynamic material instance */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstance;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -168,6 +185,9 @@ public:
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+
+	virtual void EnableCustomDepth();
+	virtual void DisableCustomDepth();
 	
 };
 

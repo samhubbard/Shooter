@@ -701,17 +701,28 @@ void AShooterCharacter::TraceForItems()
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.Actor);
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
+			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->EnableCustomDepth();
+			}
 
 			if (TraceHitItemLastFrame)
+			{
 				if (TraceHitItem != TraceHitItemLastFrame)
+				{
 					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+					TraceHitItemLastFrame->DisableCustomDepth();
+				}
+			}
 
 			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
 	else if (TraceHitItemLastFrame)
+	{
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		TraceHitItemLastFrame->DisableCustomDepth();
+	}
 }
 
 AWeapon* AShooterCharacter::SpawnDefaultWeapon()
