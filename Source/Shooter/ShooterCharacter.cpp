@@ -256,10 +256,7 @@ void AShooterCharacter::ReloadButtonPressed()
 
 void AShooterCharacter::ReloadWeapon()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied)
-		return;
-	
-	if (EquippedWeapon == nullptr)
+	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr)
 		return;
 
 	if (CarryingAmmo() && !EquippedWeapon->ClipIsFull())
@@ -315,23 +312,26 @@ void AShooterCharacter::FinishReloading()
 bool AShooterCharacter::CarryingAmmo()
 {
 	if (EquippedWeapon == nullptr)
+	{
 		return false;
+	}
 
 	auto AmmoType = EquippedWeapon->GetAmmoType();
 
 	if (AmmoMap.Contains(AmmoType))
+	{
 		return AmmoMap[AmmoType] > 0;
+	}
 
 	return false;
 }
 
 void AShooterCharacter::GrabClip()
 {
-	if (EquippedWeapon == nullptr)
+	if (EquippedWeapon == nullptr || HandSceneComponent == nullptr)
+	{
 		return;
-
-	if (HandSceneComponent == nullptr)
-		return;
+	}
 
 	int32 ClipBoneIndex { EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName()) };
 	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
@@ -385,14 +385,7 @@ void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
 {
 	float TargetCapsuleHalfHeight {};
 
-	if (bCrouching)
-	{
-		TargetCapsuleHalfHeight = CrouchingCapsuleHalfHeight;
-	}
-	else
-	{
-		TargetCapsuleHalfHeight = StandingCapsuleHalfHeight;
-	}
+	TargetCapsuleHalfHeight = bCrouching ? CrouchingCapsuleHalfHeight : StandingCapsuleHalfHeight;
 
 	const float InterpHalfHeight { FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetCapsuleHalfHeight, DeltaTime, 20.f) };
 	const float DeltaCapsuleHalfHeight { InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight() }; //Negative if crouching, positive if standing

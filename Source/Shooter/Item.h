@@ -82,6 +82,9 @@ protected:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	void EnableGlowMaterial();
+	void DisableGlowMaterial();
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 
